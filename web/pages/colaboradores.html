@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gestão de Colaboradores</title>
+    <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+    <link rel="stylesheet" href="/assets/base.css">
+    <link rel="stylesheet" href="/assets/admin.css">
+    <style>
+        .cards-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 24px;
+        }
+
+        @media(max-width: 900px) {
+            .cards-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            background: rgba(255, 255, 255, .03);
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        .radio-group label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--text);
+        }
+
+        .radio-group input {
+            width: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container wide">
+        <div class="page-header">
+            <a href="/" class="back-link">← Menu principal</a>
+            <h1>👥 Painel de Colaboradores</h1>
+            <div style="width:100px; flex-shrink:0;"></div>
+        </div>
+
+        <div class="cards-grid">
+            <div class="card">
+                <h2>Cadastrar colaborador</h2>
+                <form id="form-cadastro">
+                    <div class="form-grid" style="grid-template-columns: 1fr;">
+                        <div class="field">
+                            <label for="nome">Nome</label>
+                            <input id="nome" name="nome" required maxlength="120" placeholder="Ex: João da Silva" />
+                        </div>
+                        <div class="field">
+                            <label for="matricula">Matrícula</label>
+                            <input id="matricula" name="matricula" required maxlength="40" placeholder="Ex: 12345" />
+                        </div>
+                        <div class="field">
+                            <label for="tag">Tag NFC</label>
+                            <input id="tag" name="tag" required maxlength="80" placeholder="Aproxime a tag ou digite" />
+                        </div>
+                        <div class="field">
+                            <label for="setor">Setor</label>
+                            <input id="setor" name="setor" required maxlength="80" placeholder="Ex: TI, RH..." />
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-main" style="width: 100%; margin-top: 16px;">Salvar
+                        cadastro</button>
+                </form>
+            </div>
+
+            <div class="card">
+                <h2>Buscar colaboradores</h2>
+
+                <div class="filter-bar">
+                    <div class="radio-group">
+                        <label><input type="radio" name="filtro-ativo" value="true" checked /> Ativos</label>
+                        <label><input type="radio" name="filtro-ativo" value="false" /> Inativos</label>
+                    </div>
+                    <button id="btn-buscar" class="btn-secondary">🔍 Buscar</button>
+                </div>
+
+                <div id="tabela-container" class="table-wrap">
+                    <div class="empty-state">Carregando colaboradores...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/assets/utils.js"></script>
+    <script>
+        const formCadastro = document.getElementById("form-cadastro");
+        const btnBuscar = document.getElementById("btn-buscar");
+        const tabelaContainer = document.getElementById("tabela-container");
+
+        function getFiltroAtivo() {
+            const selected = document.querySelector("input[name='filtro-ativo']:checked");
+            return selected ? selected.value === "true" : true;
+        }
+
+        function renderTabela(colaboradores) {
+            if (!Array.isArray(colaboradores) || colaboradores.length === 0) {
+                tabelaContainer.innerHTML = `<div class="empty-state">Nenhum colaborador encontrado.</div>`;
+                return;
+            }
+
+            let html = `<table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nome</th>
+                        <th>Matrícula</th>
+                        <th>Tag</th>
+                        <th>Setor</th>
+                        <th>Status</th>
+                        <th width="100">Ação</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+
+            colaboradores.forEach(item => {
+                const statusClass = item.ativo ? "active" : "inactive";
+                const statusLabel = item.ativo ? "Ativo" : "Inativo";
+
+                let actionBtn = '<span style="color: var(--muted); font-size: 0.85rem;">Sem ação</span>';
+                if (item.ativo) {
+                    actionBtn = `<button class="btn-danger" style="padding: 6px 12px; font-size: 0.8rem" onclick="inativarColaborador(${item.id}, '${item.nome}')">Inativar</button>`;
+                }
+
+                html += `
+                    <tr>
+                        <td>${item.id ?? "-"}</td>
+                        <td><strong>${item.nome ?? "-"}</strong></td>
+                        <td>${item.matricula ?? "-"}</td>
+                        <td>${item.tag ?? "-"}</td>
+                        <td>${item.setor ?? "-"}</td>
+                        <td><span class="tag ${statusClass}">${statusLabel}</span></td>
+                        <td>${actionBtn}</td>
+                    </tr>
+                `;
+            });
+
+            html += `</tbody></table>`;
+            tabelaContainer.innerHTML = html;
+        }
+
+        async function inativarColaborador(id, nome) {
+            if (!confirm(`Confirma inativar o colaborador ${nome}?`)) return;
+
+            try {
+                // apiFetch trata erros automaticamente e lança Toast
+                await apiFetch(`/colaborador/inativar/${id}`, { method: "PUT" });
+                showToast("Colaborador inativado com sucesso!", "success");
+                buscarColaboradores();
+            } catch (error) { }
+        }
+
+        async function buscarColaboradores() {
+            btnBuscar.disabled = true;
+            btnBuscar.textContent = "⏳ Buscando...";
+
+            try {
+                const ativo = getFiltroAtivo();
+                const data = await apiFetch(`/colaborador/?ativo=${ativo}`);
+                renderTabela(data);
+            } catch (error) {
+                tabelaContainer.innerHTML = `<div class="empty-state">Erro ao buscar dados.</div>`;
+            } finally {
+                btnBuscar.disabled = false;
+                btnBuscar.textContent = "🔍 Buscar";
+            }
+        }
+
+        formCadastro.addEventListener("submit", async (event) => {
+            event.preventDefault();
+            const submitBtn = formCadastro.querySelector("button[type='submit']");
+            submitBtn.disabled = true;
+            submitBtn.textContent = "⏳ Salvando...";
+
+            const payload = {
+                nome: formCadastro.nome.value.trim(),
+                matricula: formCadastro.matricula.value.trim(),
+                tag: formCadastro.tag.value.trim(),
+                setor: formCadastro.setor.value.trim(),
+            };
+
+            try {
+                const data = await apiFetch("/colaborador/registrar", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload),
+                });
+
+                showToast(data.detail || "Colaborador cadastrado com sucesso!", "success");
+                formCadastro.reset();
+
+                // Atualiza a tabela imediatamente se a aba "Ativos" estiver selecionada
+                if (getFiltroAtivo()) {
+                    buscarColaboradores();
+                }
+            } catch (error) {
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = "Salvar cadastro";
+            }
+        });
+
+        btnBuscar.addEventListener("click", buscarColaboradores);
+
+        // Auto-busca ao carregar
+        buscarColaboradores();
+    </script>
+</body>
+</html>

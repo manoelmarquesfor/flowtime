@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+    <title>Ponto por Matrícula</title>
+    <link rel="stylesheet" href="/assets/base.css">
+    <style>
+        body {
+            display: grid;
+            place-items: center;
+        }
+
+        .stage {
+            width: min(92vw, 640px);
+            background: linear-gradient(180deg, #1b2126 0%, var(--panel) 100%);
+            border: 1px solid var(--border);
+            border-radius: 22px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            padding: 18px;
+            box-shadow: 0 24px 60px rgba(0, 0, 0, .35);
+        }
+
+        .display-box {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(255, 255, 255, .08);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, .04);
+            text-align: center;
+            visibility: hidden;
+            width: 100%;
+        }
+
+        #foto {
+            width: min(100%, 480px);
+            height: min(calc((92vw - 36px) * 0.666), 320px);
+            align-self: center;
+            object-fit: contain;
+            border-radius: 14px;
+            background: #0f1215;
+            transition: opacity .2s;
+            border: 1px solid rgba(255, 255, 255, .1);
+        }
+
+        #nome-funcionario {
+            min-height: 44px;
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        #data-hora {
+            min-height: 36px;
+            font-size: 16px;
+            color: var(--muted);
+        }
+
+        .registro-manual {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 8px;
+            padding: 8px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, .03);
+            border: 1px solid rgba(255, 255, 255, .08);
+        }
+
+        #status {
+            font-size: 14px;
+            color: var(--muted);
+            padding: 8px 14px;
+            background: rgba(0, 0, 0, .28);
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        #status.online {
+            color: var(--accent);
+        }
+
+        .header-actions {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: -6px;
+        }
+
+        @media (max-width: 560px) {
+            .registro-manual {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main class="stage">
+        <div class="header-actions">
+            <a href="/" class="back-link">← Voltar</a>
+            <div id="status">Iniciando...</div>
+        </div>
+        <img id="foto" alt="Foto do funcionario" src="/assets/default.svg" />
+        <div id="nome-funcionario" class="display-box">---</div>
+        <div id="data-hora" class="display-box">--/--/---- --:--:--</div>
+
+        <form id="form-registro" class="registro-manual">
+            <input id="matricula" name="matricula" placeholder="Digite a matrícula" maxlength="40" required autofocus>
+            <button class="btn-main" id="btn-registrar" type="submit">Bater Ponto</button>
+        </form>
+    </main>
+
+    <script src="/assets/utils.js"></script>
+    <script src="/assets/ponto-ws.js"></script>
+    <script>
+        const ui = {
+            foto: document.getElementById("foto"),
+            nome: document.getElementById("nome-funcionario"),
+            data: document.getElementById("data-hora"),
+            status: document.getElementById("status"),
+            input: document.getElementById("matricula"),
+            btn: document.getElementById("btn-registrar")
+        };
+        let hideTimer = null;
+
+        const appWS = new PontoWS({
+            onStatus: (text, online) => {
+                ui.status.textContent = text;
+                ui.status.className = online ? "online" : "";
+            },
+            onClear: () => {
+                ui.foto.src = DEFAULT_IMAGE;
+                ui.nome.style.visibility = "hidden";
+                ui.data.style.visibility = "hidden";
+                appWS.callbacks.onStatus("Aguardando batida...", true);
+            },
+            onEntidade: (msg) => {
+                ui.foto.src = msg.imagem;
+                ui.nome.textContent = msg.nome || "---";
+                ui.data.textContent = msg.data_hora || "---";
+                ui.nome.style.visibility = "visible";
+                ui.data.style.visibility = "visible";
+
+                appWS.callbacks.onStatus("Registro efetuado!", true);
+                showToast("Ponto registrado com sucesso!", "success");
+
+                clearTimeout(hideTimer);
+                hideTimer = setTimeout(appWS.callbacks.onClear, 5000);
+            }
+        }, { silent: true });
+
+        document.getElementById("form-registro").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const matricula = ui.input.value.trim();
+            if (!matricula) return;
+
+            ui.btn.disabled = true;
+            try {
+                // apiFetch lida com throws e toasts de erro automáticos
+                const res = await apiFetch(`/ponto/registrar/matricula/${encodeURIComponent(matricula)}`);
+                // Como o registro foi feito via API, o WebSocket do backend fará o broadcast 
+                // da imagem e informações pra todos os clientes (incluindo esta tela), 
+                // então o onEntidade será acionado para atualizar a UI.
+            } catch (err) {
+                // Erro já tratado no utils.js
+            } finally {
+                ui.btn.disabled = false;
+                ui.input.value = "";
+                ui.input.focus();
+            }
+        });
+
+        appWS.callbacks.onClear();
+    </script>
+</body>
+</html>

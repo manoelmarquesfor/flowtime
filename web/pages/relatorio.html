@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+    <link rel="stylesheet" href="/assets/base.css">
+    <link rel="stylesheet" href="/assets/admin.css">
+    <title>Relatório de Pontos</title>
+    <style>
+        /* Ajustes finos específicos para a tabela do relatório */
+        .records-table th {
+            cursor: pointer;
+            user-select: none;
+            white-space: nowrap;
+        }
+
+        .records-table th:hover {
+            background: rgba(255, 255, 255, .05);
+        }
+
+        .sort-icon {
+            margin-left: 5px;
+            font-size: 0.8rem;
+            color: var(--muted);
+        }
+
+        .sort-asc .sort-icon,
+        .sort-desc .sort-icon {
+            color: var(--accent);
+        }
+
+        .col-center {
+            text-align: center;
+        }
+
+        .col-time {
+            text-align: center;
+            font-family: monospace;
+            font-size: 0.95rem;
+        }
+
+        .col-text {
+            white-space: nowrap;
+        }
+
+        .status-select {
+            min-width: 140px;
+            padding: 6px 10px;
+            font-size: 0.85rem;
+        }
+
+        .observacao-input {
+            min-width: 160px;
+            padding: 6px 10px;
+            font-size: 0.85rem;
+        }
+
+        /* Spinner de carregamento */
+        .loading-state {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            color: var(--muted);
+            gap: 10px;
+        }
+
+        .spinner {
+            border: 3px solid rgba(255, 255, 255, .1);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .checkbox-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            height: 100%;
+            padding-top: 24px;
+            cursor: pointer;
+        }
+
+        .checkbox-wrapper input {
+            width: auto;
+            cursor: pointer;
+        }
+
+        /* Cores apenas para o texto do status */
+        .status-select {
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: rgba(0, 0, 0, 0.2);
+            transition: color 0.2s ease;
+            /* Transição suave apenas na cor */
+        }
+
+        /* Define apenas a cor do texto */
+        .status-select.Normal {
+            color: #28c76f;
+        }
+
+        .status-select.Falta {
+            color: #ea5455;
+        }
+
+        .status-select.Feriado {
+            color: #ff9f43;
+        }
+
+        .status-select.Folga {
+            color: #4099ff;
+        }
+
+        .status-select.Atestado {
+            color: #a855f7;
+        }
+
+        .status-select.Ferias {
+            color: #facc15;
+        }
+    </style>
+</head>
+<body>
+    <div class="container wide">
+        <div class="page-header">
+            <a href="/" class="back-link">&larr; Menu principal</a>
+            <h1>📊 Relatório de Pontos</h1>
+            <div style="width:140px;flex-shrink:0;"></div>
+        </div>
+
+        <div class="card">
+            <h2>Filtros de Busca</h2>
+            <div class="form-grid">
+                <div class="field">
+                    <label for="dataInicio">Data Inicial</label>
+                    <input type="date" id="dataInicio">
+                </div>
+                <div class="field">
+                    <label for="dataFim">Data Final</label>
+                    <input type="date" id="dataFim">
+                </div>
+                <div class="field">
+                    <label for="colaboradorSelect">Colaborador</label>
+                    <select id="colaboradorSelect">
+                        <option value="todos">Todos</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label class="checkbox-wrapper">
+                        <input type="checkbox" id="ativoCheckbox" checked>
+                        <span style="font-size: 0.9rem; font-weight: 600;">Mostrar somente Ativos</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="filter-bar" style="margin-top: 10px; margin-bottom: 0;">
+                <button class="btn-main" onclick="loadRelatorio()" id="consultarBtn">🔍 Consultar</button>
+                <button class="btn-secondary" onclick="gerarPreenchimento()" id="gerarBtn">⚙️ Gerar
+                    Preenchimento</button>
+                <button class="btn-secondary" onclick="downloadRelatorioExcel()" id="downloadBtn">📥 Baixar
+                    Excel</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Resultados</h2>
+            <div id="resultsContainer" class="table-wrap">
+                <div class="loading-state">
+                    <div class="spinner"></div>Carregando relatório...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/assets/utils.js"></script>
+    <script>
+        const API_BASE = window.location.origin;
+
+        const dataInicioInput = document.getElementById('dataInicio');
+        const dataFimInput = document.getElementById('dataFim');
+        const colaboradorSelect = document.getElementById('colaboradorSelect');
+        const resultsContainer = document.getElementById('resultsContainer');
+
+        let selectedCollaboratorId = null;
+        let ativoStatus = true;
+
+        const STATUS_OPTIONS = [
+            { value: '', label: 'Não Selecionado' },
+            { value: 'Normal', label: 'Normal' },
+            { value: 'Fim de semana', label: 'Fim de semana' },
+            { value: 'Feriado', label: 'Feriado' },
+            { value: 'Folga', label: 'Folga' },
+            { value: 'Falta', label: 'Falta' },
+            { value: 'Atestado', label: 'Atestado' },
+            { value: 'Ferias', label: 'Férias' },
+        ];
+
+        // ── Init ─────────────────────────────────────────────────────────────────
+        function init() {
+            const downloadBtn = document.getElementById('downloadBtn');
+            downloadBtn.disabled = true;
+
+            setInitialDates();
+            loadCollaborators();
+
+            colaboradorSelect.addEventListener('change', handleSelectChange);
+            dataInicioInput.addEventListener('change', handleDataInicioChange);
+            dataFimInput.addEventListener('change', handleDataFimChange);
+            document.getElementById('ativoCheckbox').addEventListener('change', handleStatusChange);
+
+            setTimeout(() => {
+                colaboradorSelect.value = 'todos';
+                selectedCollaboratorId = 'todos';
+                loadRelatorio();
+            }, 100);
+        }
+
+        function setInitialDates() {
+            const today = new Date();
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            dataInicioInput.valueAsDate = today;
+            dataFimInput.valueAsDate = tomorrow;
+        }
+
+        function handleDataInicioChange() {
+            if (new Date(dataFimInput.value) < new Date(dataInicioInput.value))
+                dataFimInput.valueAsDate = new Date(dataInicioInput.value);
+            loadRelatorio();
+        }
+
+        function handleDataFimChange() {
+            if (new Date(dataFimInput.value) < new Date(dataInicioInput.value)) {
+                dataFimInput.valueAsDate = new Date(dataInicioInput.value);
+                showToast('Data final não pode ser menor que a inicial', 'warning');
+                return;
+            }
+            loadRelatorio();
+        }
+
+        // ── Collaborators ────────────────────────────────────────────────────────
+        async function loadCollaborators() {
+            try {
+                // apiFetch lida com try/catch e toast interno
+                const data = await apiFetch(`${API_BASE}/colaborador/?ativo=${ativoStatus}`);
+                renderSelectOptions(data);
+            } catch (error) {
+                // Erro já tratado no utils.js
+            }
+        }
+
+        function renderSelectOptions(colaboradores) {
+            const selectedValue = colaboradorSelect.value;
+            colaboradorSelect.innerHTML = '<option value="">Selecionar Colaborador</option><option value="todos">Todos</option>';
+            colaboradores.forEach(c => {
+                const o = document.createElement('option');
+                o.value = c.id;
+                o.textContent = c.nome;
+                colaboradorSelect.appendChild(o);
+            });
+            colaboradorSelect.value = selectedValue;
+        }
+
+        function handleStatusChange() {
+            ativoStatus = document.getElementById('ativoCheckbox').checked;
+            loadCollaborators();
+        }
+
+        function handleSelectChange() {
+            const value = colaboradorSelect.value;
+            if (value === 'todos') { selectedCollaboratorId = 'todos'; loadRelatorio(); }
+            else if (value) { selectedCollaboratorId = parseInt(value); loadRelatorio(); }
+            else {
+                selectedCollaboratorId = null;
+                resultsContainer.innerHTML = '<div class="empty-state">Selecione um colaborador</div>';
+            }
+        }
+
+        function convertDateFormat(dateStr) {
+            if (!dateStr || dateStr.length !== 10) return dateStr;
+            const [year, month, day] = dateStr.split('-');
+            return `${day}/${month}/${year}`;
+        }
+
+        // ── Relatório ─────────────────────────────────────────────────────────────
+        async function loadRelatorio() {
+            let dataInicio = dataInicioInput.value;
+            let dataFim = dataFimInput.value;
+
+            if (!dataInicio || !dataFim) {
+                resultsContainer.innerHTML = '<div class="empty-state">Selecione as datas</div>';
+                return;
+            }
+            if (!selectedCollaboratorId) {
+                resultsContainer.innerHTML = '<div class="empty-state">Selecione um colaborador</div>';
+                return;
+            }
+
+            dataInicio = convertDateFormat(dataInicio);
+            dataFim = convertDateFormat(dataFim);
+            resultsContainer.innerHTML = '<div class="loading-state"><div class="spinner"></div>Carregando...</div>';
+
+            try {
+                let url = selectedCollaboratorId === 'todos'
+                    ? `${API_BASE}/relatorios/periodo?data_inicio=${dataInicio}&data_fim=${dataFim}`
+                    : `${API_BASE}/relatorios/periodo/colaborador/${selectedCollaboratorId}?data_inicio=${dataInicio}&data_fim=${dataFim}`;
+
+                const data = await apiFetch(url);
+                renderResults(data, dataInicio, dataFim);
+            } catch (error) {
+                resultsContainer.innerHTML = '<div class="empty-state">Erro ao carregar dados</div>';
+                document.getElementById('downloadBtn').disabled = true;
+            }
+        }
+
+        // ── Render table ──────────────────────────────────────────────────────────
+        function renderResults(records, dataInicio, dataFim) {
+            const downloadBtn = document.getElementById('downloadBtn');
+
+            if (!records.length) {
+                resultsContainer.innerHTML = `
+                <div class="empty-state" style="padding: 40px 0;">
+                    <div style="font-size: 2rem; margin-bottom: 10px;">📭</div>
+                    <div>Nenhum registro encontrado</div>
+                    <div style="font-size: 0.85rem; color: var(--muted); margin-top: 6px;">Período: ${dataInicio} até ${dataFim}</div>
+                </div>`;
+                downloadBtn.disabled = true;
+                return;
+            }
+
+            downloadBtn.disabled = false;
+
+            const table = document.createElement('table');
+            table.className = 'records-table';
+
+            const COLUMNS = [
+                { label: 'Colaborador', key: 'colaborador.nome', cls: '' },
+                { label: 'Matrícula', key: 'colaborador.matricula', cls: 'col-center' },
+                { label: 'Data', key: 'data', cls: 'col-center' },
+                { label: 'Dia', key: 'dia_semana', cls: 'col-center' },
+                { label: 'Status', key: 'status', cls: 'col-center' },
+                { label: 'Entrada 1', key: 'entrada1', cls: 'col-center' },
+                { label: 'Saída 1', key: 'saida1', cls: 'col-center' },
+                { label: 'Entrada 2', key: 'entrada2', cls: 'col-center' },
+                { label: 'Saída 2', key: 'saida2', cls: 'col-center' },
+                { label: 'Entrada 3', key: 'entrada3', cls: 'col-center' },
+                { label: 'Saída 3', key: 'saida3', cls: 'col-center' },
+                { label: 'Observação', key: 'observacao', cls: '' },
+            ];
+
+            let sortKey = 'data';
+            let sortDir = 1;
+            let currentRecords = [];
+
+            function getNestedVal(obj, path) {
+                return path.split('.').reduce((o, k) => (o ? o[k] : null), obj) ?? '';
+            }
+
+            function sortAndRender() {
+                const sorted = [...currentRecords].sort((a, b) => {
+                    const va = getNestedVal(a, sortKey);
+                    const vb = getNestedVal(b, sortKey);
+                    if (va < vb) return -sortDir;
+                    if (va > vb) return sortDir;
+                    return 0;
+                });
+                const tbody = table.querySelector('tbody');
+                tbody.innerHTML = '';
+                sorted.forEach(r => tbody.appendChild(buildRow(r)));
+
+                table.querySelectorAll('th.sortable').forEach(th => {
+                    th.classList.remove('sort-asc', 'sort-desc');
+                    const icon = th.querySelector('.sort-icon');
+                    if (th.dataset.key === sortKey) {
+                        th.classList.add(sortDir === 1 ? 'sort-asc' : 'sort-desc');
+                        icon.textContent = sortDir === 1 ? '▲' : '▼';
+                    } else {
+                        icon.textContent = '⇅';
+                    }
+                });
+            }
+
+            const theadRow = document.createElement('tr');
+            COLUMNS.forEach(col => {
+                const th = document.createElement('th');
+                th.className = ('sortable ' + col.cls).trim();
+                th.dataset.key = col.key;
+                th.innerHTML = col.label + '<span class="sort-icon">⇅</span>';
+                th.addEventListener('click', () => {
+                    if (sortKey === col.key) { sortDir *= -1; }
+                    else { sortKey = col.key; sortDir = 1; }
+                    sortAndRender();
+                });
+                theadRow.appendChild(th);
+            });
+            const thead = document.createElement('thead');
+            thead.appendChild(theadRow);
+            table.appendChild(thead);
+
+            currentRecords = records;
+            const tbody = document.createElement('tbody');
+            table.appendChild(tbody);
+            sortAndRender();
+
+            resultsContainer.innerHTML = '';
+            resultsContainer.appendChild(table);
+        }
+
+        function buildRow(record) {
+            const tr = document.createElement('tr');
+
+            const textCells = [
+                { text: record.colaborador?.nome || 'N/A', cls: 'col-text' },
+                { text: record.colaborador?.matricula || 'N/A', cls: 'col-text col-center' },
+                { text: formatDate(record.data), cls: 'col-center' },
+                { text: record.dia_semana || '-', cls: 'col-center' },
+            ];
+            textCells.forEach(({ text, cls }) => {
+                const td = document.createElement('td');
+                td.textContent = text;
+                if (cls) td.className = cls;
+                tr.appendChild(td);
+            });
+
+            // Status select
+            const tdStatus = document.createElement('td');
+            tdStatus.className = 'col-center';
+            const selStatus = document.createElement('select');
+
+            // Função auxiliar para atualizar APENAS a classe de cor
+            const updateStatusColor = (val) => {
+                // Removemos todas as classes de cor possíveis antes de aplicar a nova
+                selStatus.className = `status-select ${val}`;
+            };
+
+            // Aplica a cor inicial (do record)
+            updateStatusColor(record.status || '');
+
+            const currentStatus = record.status || '';
+            STATUS_OPTIONS.forEach(({ value, label }) => {
+                const opt = document.createElement('option');
+                opt.value = value;
+                opt.textContent = label;
+                if (value === currentStatus) opt.selected = true;
+                selStatus.appendChild(opt);
+            });
+
+            selStatus.addEventListener('change', () => {
+                updateStatusColor(selStatus.value); // Atualiza a cor visualmente
+                const obsInput = tr.querySelector('.observacao-input');
+                salvarPonto(record.id, selStatus.value, obsInput ? obsInput.value : record.observacao);
+            });
+
+            tdStatus.appendChild(selStatus);
+            tr.appendChild(tdStatus);
+
+            // Horários
+            const horarCells = [
+                { text: record.entrada1 ? formatTime(record.entrada1) : '-' },
+                { text: record.saida1 ? formatTime(record.saida1) : '-' },
+                { text: record.entrada2 ? formatTime(record.entrada2) : '-' },
+                { text: record.saida2 ? formatTime(record.saida2) : '-' },
+                { text: record.entrada3 ? formatTime(record.entrada3) : '-' },
+                { text: record.saida3 ? formatTime(record.saida3) : '-' },
+            ];
+            horarCells.forEach(({ text }) => {
+                const td = document.createElement('td');
+                td.className = 'col-time';
+                td.textContent = text;
+                tr.appendChild(td);
+            });
+
+            // Observação
+            const tdObs = document.createElement('td');
+            const obsInput = document.createElement('input');
+            obsInput.type = 'text';
+            obsInput.className = 'observacao-input';
+            obsInput.value = record.observacao || '';
+            obsInput.placeholder = 'Observação...';
+            obsInput.maxLength = 500;
+
+            let obsDebounce = null;
+            obsInput.addEventListener('input', () => {
+                clearTimeout(obsDebounce);
+                obsDebounce = setTimeout(() => {
+                    salvarPonto(record.id, selStatus.value, obsInput.value);
+                }, 700);
+            });
+            obsInput.addEventListener('blur', () => {
+                clearTimeout(obsDebounce);
+                salvarPonto(record.id, selStatus.value, obsInput.value);
+            });
+
+            tdObs.appendChild(obsInput);
+            tr.appendChild(tdObs);
+
+            return tr;
+        }
+
+        // ── Save ─────────────────────────────────────────────────────────────────
+        async function salvarPonto(id, status, observacao) {
+            try {
+                const payload = { status: status || null, observacao: observacao || null };
+                await apiFetch(`${API_BASE}/ponto/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                });
+                showToast('Registro atualizado!', 'success');
+            } catch (error) {
+                // Erro do utils.js
+            }
+        }
+
+        // ── Formatters ────────────────────────────────────────────────────────────
+        function formatDate(dateString) {
+            try {
+                if (dateString && dateString.length === 10 && !dateString.includes('T'))
+                    return new Intl.DateTimeFormat('pt-BR').format(new Date(dateString + 'T00:00:00'));
+                if (dateString.includes('T'))
+                    return new Intl.DateTimeFormat('pt-BR').format(new Date(dateString.split('T')[0] + 'T00:00:00'));
+                return dateString;
+            } catch { return dateString; }
+        }
+
+        function formatTime(dateTimeString) {
+            try {
+                return new Intl.DateTimeFormat('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }).format(new Date(dateTimeString));
+            } catch { return dateTimeString; }
+        }
+
+        // ── Gerar Preenchimento ───────────────────────────────────────────────────
+        async function gerarPreenchimento() {
+            const dataInicio = convertDateFormat(dataInicioInput.value);
+            const dataFim = convertDateFormat(dataFimInput.value);
+
+            if (!dataInicio || !dataFim) {
+                showToast('Selecione o período antes de gerar', 'error');
+                return;
+            }
+
+            const gerarBtn = document.getElementById('gerarBtn');
+            gerarBtn.disabled = true;
+            gerarBtn.innerHTML = '⏳ Gerando...';
+
+            try {
+                const params = new URLSearchParams({ data_inicio: dataInicio, data_fim: dataFim });
+                if (selectedCollaboratorId && selectedCollaboratorId !== 'todos') {
+                    params.set('colaborador', selectedCollaboratorId);
+                }
+
+                const res = await apiFetch(`${API_BASE}/relatorios/gerar-preenchimento?${params.toString()}`, { method: 'PUT' });
+                showToast(res.detail || 'Preenchimento gerado com sucesso!', 'success');
+                loadRelatorio();
+            } catch (error) {
+                // Erro já emitido pelo wrapper apiFetch
+            } finally {
+                gerarBtn.disabled = false;
+                gerarBtn.innerHTML = '⚙️ Gerar Preenchimento';
+            }
+        }
+
+        // ── Excel download ────────────────────────────────────────────────────────
+        async function downloadRelatorioExcel() {
+            const downloadBtn = document.getElementById('downloadBtn');
+            downloadBtn.disabled = true;
+            downloadBtn.innerHTML = '⏳ Baixando...';
+            try {
+                const dataInicio = convertDateFormat(dataInicioInput.value);
+                const dataFim = convertDateFormat(dataFimInput.value);
+                let url = selectedCollaboratorId && selectedCollaboratorId !== 'todos'
+                    ? `${API_BASE}/relatorios/periodo/colaborador/${selectedCollaboratorId}?data_inicio=${dataInicio}&data_fim=${dataFim}&output=excel`
+                    : `${API_BASE}/relatorios/periodo?data_inicio=${dataInicio}&data_fim=${dataFim}&output=excel`;
+
+                const res = await fetch(url);
+                if (!res.ok) throw new Error(`Erro HTTP ${res.status}`);
+
+                const cd = res.headers.get('content-disposition') || '';
+                const match = cd.match(/filename="?([^"]+)"?/);
+                const fileName = match ? match[1] : 'relatorio_pontos.xlsx';
+
+                const blob = await res.blob();
+                const a = document.createElement('a');
+                a.href = window.URL.createObjectURL(blob);
+                a.download = fileName;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(a.href);
+                document.body.removeChild(a);
+
+                showToast('Download concluído!', 'success');
+            } catch (error) {
+                showToast('Erro ao fazer download do Excel', 'error');
+            } finally {
+                downloadBtn.disabled = false;
+                downloadBtn.innerHTML = '📥 Baixar Excel';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>

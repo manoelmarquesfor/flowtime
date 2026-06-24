@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gestão de Feriados</title>
+    <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+    <link rel="stylesheet" href="/assets/base.css">
+    <link rel="stylesheet" href="/assets/admin.css">
+    <style>
+        .cards-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.5fr;
+            gap: 24px;
+        }
+
+        @media(max-width: 900px) {
+            .cards-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="page-header">
+            <a href="/" class="back-link">← Menu principal</a>
+            <h1>📅 Gestão de Feriados</h1>
+            <div style="width:100px; flex-shrink:0;"></div>
+        </div>
+
+        <div class="cards-grid">
+            <div class="card">
+                <h2>Cadastrar Feriado</h2>
+                <form id="form-cadastro">
+                    <div class="form-grid">
+                        <div class="field full">
+                            <label>Data</label>
+                            <input name="data" type="date" required />
+                        </div>
+                        <div class="field full">
+                            <label>Descrição</label>
+                            <input name="descricao" type="text" required maxlength="120" placeholder="Ex: Natal" />
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-main" style="width: 100%">Salvar feriado</button>
+                </form>
+            </div>
+
+            <div class="card">
+                <h2>Feriados Cadastrados</h2>
+                <div class="filter-bar">
+                    <div class="field" style="flex-direction: row; align-items: center">
+                        <label>Ano:</label>
+                        <input id="input-ano" type="number" style="width: 120px" min="2000" max="2099" />
+                    </div>
+                    <button id="btn-buscar" class="btn-secondary">Buscar</button>
+                </div>
+
+                <div class="table-wrap" id="tabela-container">
+                    <div class="empty-state">Informe o ano e busque.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/assets/utils.js"></script>
+    <script>
+        const inputAno = document.getElementById("input-ano");
+        inputAno.value = new Date().getFullYear();
+
+        function renderTable(feriados) {
+            const container = document.getElementById("tabela-container");
+            if (!feriados.length) {
+                container.innerHTML = `<div class="empty-state">Nenhum feriado encontrado neste ano.</div>`;
+                return;
+            }
+
+            let html = `<table><thead><tr><th>Data</th><th>Descrição</th><th width="100">Ação</th></tr></thead><tbody>`;
+            feriados.sort((a, b) => a.data > b.data ? 1 : -1).forEach(f => {
+                const dataBr = f.data.split('-').reverse().join('/');
+                html += `
+                    <tr>
+                        <td><strong>${dataBr}</strong></td>
+                        <td>${f.descricao || '-'}</td>
+                        <td><button class="btn-danger" style="padding: 6px 12px; font-size: 0.8rem" onclick="remover('${f.data}')">Excluir</button></td>
+                    </tr>
+                `;
+            });
+            html += `</tbody></table>`;
+            container.innerHTML = html;
+        }
+
+        async function buscarFeriados() {
+            const ano = inputAno.value;
+            if (!ano) return;
+            try {
+                const data = await apiFetch(`/feriados/ano/${ano}`);
+                renderTable(data);
+            } catch (e) {
+                document.getElementById("tabela-container").innerHTML = `<div class="empty-state">Erro ao buscar dados.</div>`;
+            }
+        }
+
+        async function remover(dataIso) {
+            if (!confirm(`Excluir feriado do dia ${dataIso}?`)) return;
+            try {
+                await apiFetch(`/feriados/${encodeURIComponent(dataIso)}`, { method: "DELETE" });
+                showToast("Feriado removido!", "success");
+                buscarFeriados();
+            } catch (e) { }
+        }
+
+        document.getElementById("form-cadastro").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button');
+            btn.disabled = true;
+            try {
+                const payload = {
+                    data: e.target.data.value,
+                    descricao: e.target.descricao.value.trim()
+                };
+                await apiFetch("/feriados/", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+                showToast("Feriado cadastrado com sucesso!", "success");
+                e.target.reset();
+                if (payload.data.startsWith(inputAno.value)) buscarFeriados();
+            } catch (e) { } finally { btn.disabled = false; }
+        });
+
+        document.getElementById("btn-buscar").addEventListener("click", buscarFeriados);
+        buscarFeriados();
+    </script>
+</body>
+</html>

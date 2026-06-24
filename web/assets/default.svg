@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400" role="img"
+    aria-label="Aguardando batida">
+    <rect width="600" height="400" fill="#12181d" />
+    <circle cx="300" cy="150" r="58" fill="#313b45" />
+    <rect x="190" y="228" width="220" height="112" rx="56" fill="#313b45" />
+</svg>

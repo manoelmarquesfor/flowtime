@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+    <link rel="stylesheet" href="/assets/base.css">
+    <link rel="stylesheet" href="/assets/admin.css">
+    <title>FlowTime - Sistema de Ponto - Menu Principal</title>
+    <style>
+        /* Estilos exclusivos do Dashboard/Menu */
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin: 0 0 10px 0;
+            background: linear-gradient(135deg, var(--accent), #1fbf89);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: 1rem;
+            color: var(--muted);
+            margin: 0;
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+
+        a.card {
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: 16px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        a.card:hover {
+            transform: translateY(-8px);
+            border-color: var(--accent);
+            box-shadow: 0 12px 40px rgba(40, 199, 111, 0.2);
+        }
+
+        .card-icon {
+            font-size: 3.5rem;
+            line-height: 1;
+        }
+
+        .card-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--text);
+            margin: 0;
+        }
+
+        .card-description {
+            font-size: 0.9rem;
+            color: var(--muted);
+            margin: 0;
+            line-height: 1.5;
+        }
+
+        /* Cores específicas por card */
+        .card.primary .card-title {
+            color: var(--accent);
+        }
+
+        .card.warning .card-title {
+            color: var(--warning);
+        }
+
+        .card.warning:hover {
+            border-color: var(--warning);
+            box-shadow: 0 12px 40px rgba(255, 159, 67, 0.2);
+        }
+
+        .card.info .card-title {
+            color: var(--info);
+        }
+
+        .card.info:hover {
+            border-color: var(--info);
+            box-shadow: 0 12px 40px rgba(64, 153, 255, 0.2);
+        }
+
+        .card.danger .card-title {
+            color: var(--danger);
+        }
+
+        .card.danger:hover {
+            border-color: var(--danger);
+            box-shadow: 0 12px 40px rgba(234, 84, 85, 0.2);
+        }
+
+        .card.purple .card-title {
+            color: #a78bfa;
+        }
+
+        .card.purple:hover {
+            border-color: #a78bfa;
+            box-shadow: 0 12px 40px rgba(167, 139, 250, 0.2);
+        }
+
+        .footer {
+            text-align: center;
+            color: var(--muted);
+            font-size: 0.85rem;
+            margin-top: 50px;
+            padding-top: 30px;
+            border-top: 1px solid var(--border);
+        }
+
+        .version {
+            color: #626b77;
+            margin-top: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8rem;
+            }
+
+            .cards-grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+
+            .card-icon {
+                font-size: 2.5rem;
+            }
+
+            .card-title {
+                font-size: 1.1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>FlowTime</h1>
+            <p class="subtitle">Selecione uma opção abaixo para continuar</p>
+        </div>
+
+        <div class="cards-grid">
+            <a href="/ponto-tag" class="card primary">
+                <div class="card-icon">🏷️</div>
+                <div class="card-title">Ponto por Tag</div>
+                <p class="card-description">Registre seu ponto usando a tag NFC</p>
+            </a>
+
+            <a href="/ponto-matricula" class="card warning">
+                <div class="card-icon">🆔</div>
+                <div class="card-title">Ponto por Matrícula</div>
+                <p class="card-description">Registre seu ponto informando a matrícula</p>
+            </a>
+
+            <a href="/relatorio" class="card info">
+                <div class="card-icon">📊</div>
+                <div class="card-title">Relatório de Pontos</div>
+                <p class="card-description">Visualize e edite os registros de ponto</p>
+            </a>
+
+            <a href="/colaboradores" class="card danger">
+                <div class="card-icon">👥</div>
+                <div class="card-title">Colaboradores</div>
+                <p class="card-description">Gerencie o cadastro de colaboradores</p>
+            </a>
+
+            <a href="/feriado" class="card purple">
+                <div class="card-icon">📅</div>
+                <div class="card-title">Feriados</div>
+                <p class="card-description">Cadastre e consulte os feriados por ano</p>
+            </a>
+
+        </div>
+
+        <div class="footer">
+            <p>FlowTime - Controle de Ponto</p>
+            <p class="version">v1.0.0</p>
+        </div>
+    </div>
+</body>
+</html>
