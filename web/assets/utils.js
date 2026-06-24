@@ -19,15 +19,57 @@ function showToast(message, type = 'info') {
 
 // Wrapper padronizado para Fetch (reduz repetição nos forms)
 async function apiFetch(url, options = {}) {
+
     try {
-        const response = await fetch(url, options);
+        const response = await rawFetch(url, {
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            },
+            ...options
+        });
         const data = await response.json().catch(() => ({}));
-        if (!response.ok) {
-            throw new Error(data.detail || `Erro HTTP ${response.status}`);
+
+        if (response.ok) {
+            return data;
         }
-        return data;
+
+        if (response.status === 401) {
+            showToast("Sessão expirada. Redirecionando para login...", 'error');
+            window.location.href = "/login";
+            return;
+        }
+
+        throw new Error(data.detail || `Erro HTTP ${response.status}`);
+
     } catch (error) {
         showToast(error.message, 'error');
         throw error;
     }
 }
+
+
+async function rawFetch(url, options = {}) {
+    return fetch(url, {
+        credentials: "include",
+        ...options
+    });
+}
+
+async function checkAuth() {
+    try {
+        const res = await rawFetch("/auth/me");
+
+        if (!res.ok) {
+            window.location.href = "/login";
+            return;
+        }
+
+        document.body.style.display = "block";
+
+    } catch {
+        window.location.href = "/login";
+    }
+}
+
+

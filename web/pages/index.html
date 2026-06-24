@@ -145,6 +145,12 @@
             .card-title {
                 font-size: 1.1rem;
             }
+
+            .logout-btn {
+                position: fixed;
+                top: 15px;
+                right: 15px;
+            }
         }
     </style>
 </head>
@@ -154,6 +160,11 @@
             <h1>FlowTime</h1>
             <p class="subtitle">Selecione uma opção abaixo para continuar</p>
         </div>
+
+        <button id="logoutBtn" class="btn-secondary" style="position:absolute; right:20px; top:20px;">
+            Sair
+        </button>
+
 
         <div class="cards-grid">
             <a href="/ponto-tag" class="card primary">
@@ -193,5 +204,24 @@
             <p class="version">v1.0.0</p>
         </div>
     </div>
+
+
+    <script src="/assets/utils.js"></script>
+    <script>
+        async function logout() {
+            try {
+                await rawFetch("/auth/logout", {
+                    method: "DELETE"
+                });
+
+                window.location.href = "/login";
+            } catch (e) {
+                console.error(e);
+            }
+        }
+        document.getElementById("logoutBtn").addEventListener("click", logout);
+        checkAuth();
+
+    </script>
 </body>
 </html>

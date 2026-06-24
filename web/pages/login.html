@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login - FlowTime</title>
+
+    <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+    <link rel="stylesheet" href="/assets/base.css">
+    <link rel="stylesheet" href="/assets/admin.css">
+
+    <style>
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+        }
+
+        body {
+            overflow-x: hidden;
+        }
+
+        body.login-page {
+            overflow: hidden;
+        }
+    </style>
+</head>
+
+<body class="login-page">
+
+    <div class="container"
+        style="min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px;">
+
+        <div class="card"
+            style="width:100%; max-width:380px; padding:28px; display:flex; flex-direction:column; gap:14px;">
+
+            <!-- HEADER -->
+            <div style="text-align:center; margin-bottom:6px;">
+                <h2 style="margin:0; font-size:1.6rem;">🔐 FlowTime</h2>
+                <p style="color:var(--muted); margin:6px 0 0 0; font-size:0.9rem;">
+                    Entre para acessar o sistema
+                </p>
+            </div>
+
+            <!-- ERROR -->
+            <div id="error" class="error-box" style="margin:0;"></div>
+
+            <!-- FORM -->
+            <form id="login-form" style="display:flex; flex-direction:column; gap:12px;">
+
+                <div class="field full">
+                    <label>E-mail</label>
+                    <input name="email" type="email" required placeholder="seu@email.com" />
+                </div>
+
+                <div class="field full">
+                    <label>Senha</label>
+                    <input name="password" type="password" required placeholder="••••••••" />
+                </div>
+
+                <button type="submit" class="btn-main" style="width:100%; margin-top:6px;">
+                    Entrar
+                </button>
+            </form>
+
+            <!-- FOOTER -->
+            <div style="text-align:center; margin-top:6px; font-size:0.75rem; color:var(--muted);">
+                FlowTime • Controle de Ponto
+            </div>
+
+        </div>
+
+    </div>
+
+    <script src="/assets/utils.js"></script>
+
+    <script>
+        document.documentElement.style.overflow = "hidden";
+        document.body.style.overflow = "hidden";
+
+        document.getElementById("login-form").addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const btn = e.target.querySelector("button");
+            btn.disabled = true;
+            btn.innerText = "Entrando...";
+
+            const errorBox = document.getElementById("error");
+            errorBox.style.display = "none";
+
+            try {
+                await apiFetch("/auth/login", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        email: e.target.email.value,
+                        password: e.target.password.value
+                    })
+                });
+
+                window.location.href = "/";
+
+            } catch (err) {
+                errorBox.innerText = err.message;
+                errorBox.style.display = "block";
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "Entrar";
+            }
+        });
+
+    </script>
+</body>
+</html>

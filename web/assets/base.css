@@ -198,3 +198,13 @@ select option {
         transform: translateX(100%);
     }
 }
+
+.card form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.field {
+    margin: 0;
+}
