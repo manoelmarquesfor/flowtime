@@ -11,6 +11,7 @@ import (
 	"syscall"
 	"time"
 
+	"github/manoelmarquesfor/flowtime/internal/auth"
 	"github/manoelmarquesfor/flowtime/internal/config"
 	"github/manoelmarquesfor/flowtime/internal/database"
 	"github/manoelmarquesfor/flowtime/internal/middleware"
@@ -73,7 +74,7 @@ func main() {
 }
 
 func setupServer(config *config.Config) *http.Server {
-	_, err := database.Setup(config)
+	database, err := database.Setup(config)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -81,6 +82,12 @@ func setupServer(config *config.Config) *http.Server {
 	router := chi.NewRouter()
 	middleware.Setup(router)
 	web.Setup(router)
+
+	authRepository := auth.NewRepository(database)
+	authService := auth.NewService(authRepository)
+	authHandler := auth.NewHandler(authService)
+
+	authHandler.RegisterRoutes(router)
 
 	srv := &http.Server{
 		Addr:              fmt.Sprintf(":%d", config.Server.Port),
