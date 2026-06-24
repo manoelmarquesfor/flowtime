@@ -18,6 +18,7 @@ var (
 
 func Setup(router *chi.Mux) {
 	router.Get("/", servePage("index.html"))
+	router.Get("/login", servePage("login.html"))
 	router.Get("/colaboradores", servePage("colaboradores.html"))
 	router.Get("/feriado", servePage("feriado.html"))
 	router.Get("/relatorio", servePage("relatorio.html"))
