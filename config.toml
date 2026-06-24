@@ -1,0 +1,7 @@
+[database]
+name="ponto.db"
+
+[server]
+port=8000
+shutdown_timeout=5
+
