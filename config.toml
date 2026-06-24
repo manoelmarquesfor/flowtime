@@ -1,7 +1,7 @@
 [database]
-name="ponto.db"
+name="flowtime.db"
 
 [server]
 port=8000
-shutdown_timeout=5
+shutdown_timeout=2
 
