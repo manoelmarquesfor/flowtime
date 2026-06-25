@@ -17,6 +17,8 @@ func ResponseError(writer http.ResponseWriter, erro error) {
 
 	var errUnauthorized *errs.UnauthorizedError
 
+	var errForbidden *errs.ForbiddenError
+
 	var errNotFound *errs.NotFoundError
 
 	var errInternal *errs.InternalError
@@ -30,6 +32,9 @@ func ResponseError(writer http.ResponseWriter, erro error) {
 
 	case errors.As(erro, &errUnauthorized):
 		statusCode = http.StatusUnauthorized
+		msg = erro.Error()
+	case errors.As(erro, &errForbidden):
+		statusCode = http.StatusForbidden
 		msg = erro.Error()
 
 	case errors.As(erro, &errNotFound):
