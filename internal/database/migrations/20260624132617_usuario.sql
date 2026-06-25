@@ -9,12 +9,16 @@ CREATE TABLE usuario (
     ativo BOOLEAN NOT NULL DEFAULT TRUE,
     dt_criacao TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
-
 CREATE INDEX idx_usuario_email ON usuario(email);
 CREATE INDEX idx_usuario_sessao_id ON usuario(sessao_id);
-
-INSERT INTO usuario (id, nome, email, password, regra, ativo) VALUES
-    ('439b7929-1906-44bb-b8af-158a7dd5d6de', 'Administrador', 'admin@admin.com', 'admin', 'ADMIN', TRUE);
-
+INSERT INTO usuario (id, nome, email, password, regra, ativo)
+VALUES (
+        '439b7929-1906-44bb-b8af-158a7dd5d6de',
+        'Administrador',
+        'admin@admin.com',
+        '$2a$10$8MVfJuY3ndbIs5wOmT5dFePplpObMh/ebg.IsMTB9XxEKFqnZZwLu',
+        'ADMIN',
+        TRUE
+    );
 -- +goose Down
 DROP TABLE usuario;
