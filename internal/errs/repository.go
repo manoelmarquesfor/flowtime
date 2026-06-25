@@ -6,8 +6,6 @@ func NewRepositoryError(message string) *RepositoryError {
 	}
 }
 
-var ErrRepository *RepositoryError
-
 type RepositoryError struct {
 	Message string
 }

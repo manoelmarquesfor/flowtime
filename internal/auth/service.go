@@ -31,7 +31,8 @@ func (s *Service) Login(
 
 	usuario, err := s.repository.UsuarioByEmail(ctx, email)
 	if err != nil {
-		if errors.As(err, &errs.ErrNotFound) {
+		var errNotFound *errs.NotFoundError
+		if errors.As(err, &errNotFound) {
 			return uuid.Nil, errs.NewValidationError("Email ou senha incorreto")
 		}
 

@@ -13,20 +13,30 @@ func ResponseError(writer http.ResponseWriter, erro error) {
 
 	msg := "Erro interno do servidor"
 
+	var errValidation *errs.ValidationError
+
+	var errUnauthorized *errs.UnauthorizedError
+
+	var errNotFound *errs.NotFoundError
+
+	var errInternal *errs.InternalError
+
+	var errRepository *errs.RepositoryError
+
 	switch {
-	case errors.As(erro, &errs.ErrValidation):
+	case errors.As(erro, &errValidation):
 		statusCode = http.StatusBadRequest
 		msg = erro.Error()
 
-	case errors.As(erro, &errs.ErrUnauthorized):
+	case errors.As(erro, &errUnauthorized):
 		statusCode = http.StatusUnauthorized
 		msg = erro.Error()
 
-	case errors.As(erro, &errs.ErrNotFound):
+	case errors.As(erro, &errNotFound):
 		statusCode = http.StatusNotFound
 		msg = erro.Error()
 
-	case errors.As(erro, &errs.ErrInternal) || errors.As(erro, &errs.ErrRepository):
+	case errors.As(erro, &errInternal) || errors.As(erro, &errRepository):
 		statusCode = http.StatusInternalServerError
 
 		log.Println(erro)

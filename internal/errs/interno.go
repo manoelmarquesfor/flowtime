@@ -6,8 +6,6 @@ func NewInternalError(message string) *InternalError {
 	}
 }
 
-var ErrInternal *InternalError
-
 type InternalError struct {
 	Message string
 }
