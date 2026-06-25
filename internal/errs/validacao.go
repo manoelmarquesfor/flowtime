@@ -4,6 +4,8 @@ type ValidationError struct {
 	Message string
 }
 
+var ErrValidation *ValidationError
+
 func (e *ValidationError) Error() string {
 	if e.Message != "" {
 		return e.Message

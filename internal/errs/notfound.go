@@ -6,6 +6,8 @@ func NewNotFoundError(message string) *NotFoundError {
 	}
 }
 
+var ErrNotFound *NotFoundError
+
 type NotFoundError struct {
 	Message string
 }

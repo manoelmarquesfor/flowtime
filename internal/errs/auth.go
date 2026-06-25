@@ -6,7 +6,7 @@ func (e *UnauthorizedError) Error() string {
 	return "Acesso não autorizado"
 }
 
-var ErrUnauthorized = &UnauthorizedError{}
+var ErrUnauthorized *UnauthorizedError
 
 func NewUnauthorizedError() *UnauthorizedError {
 	return ErrUnauthorized
@@ -15,6 +15,8 @@ func NewUnauthorizedError() *UnauthorizedError {
 type InvalidTokenError struct {
 	Message string
 }
+
+var ErrInvalidToken *InvalidTokenError
 
 func (e *InvalidTokenError) Error() string {
 	if e.Message != "" {
