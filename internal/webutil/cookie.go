@@ -3,6 +3,8 @@ package webutil
 import (
 	"net/http"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 const (
@@ -13,11 +15,11 @@ const (
 
 func SetSessionCookie(
 	w http.ResponseWriter,
-	sessionID string,
+	sessionID uuid.UUID,
 ) {
 	http.SetCookie(w, &http.Cookie{
 		Name:     SessionCookieName,
-		Value:    sessionID,
+		Value:    sessionID.String(),
 		Path:     "/",
 		HttpOnly: true,
 		Secure:   SessionCookieSecure,
@@ -37,7 +39,7 @@ func ClearSessionCookie(w http.ResponseWriter) {
 	})
 }
 
-func GetSessionCookie(r *http.Request) *string {
+func GetSessionCookie(r *http.Request) *uuid.UUID {
 	cookie, err := r.Cookie(SessionCookieName)
 	if err != nil {
 		return nil
@@ -47,5 +49,10 @@ func GetSessionCookie(r *http.Request) *string {
 		return nil
 	}
 
-	return &cookie.Value
+	sessionID, err := uuid.Parse(cookie.Value)
+	if err != nil {
+		return nil
+	}
+
+	return &sessionID
 }
