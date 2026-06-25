@@ -1,0 +1,11 @@
+{
+    "sqltools.connections": [
+        {
+            "previewLimit": 50,
+            "driver": "SQLite",
+            "name": "flowtime",
+            "database": "${workspaceFolder:flowtime}/flowtime.db"
+        }
+    ],
+    "sqltools.useNodeRuntime": true
+}
