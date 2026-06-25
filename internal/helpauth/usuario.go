@@ -2,7 +2,7 @@ package helpauth
 
 import "github.com/google/uuid"
 
-type UsuarioAutencicado struct {
+type UsuarioAutenticado struct {
 	ID    uuid.UUID
 	Nome  string
 	Email string
@@ -10,8 +10,8 @@ type UsuarioAutencicado struct {
 	Ativo bool
 }
 
-func (u *UsuarioRepository) ToUsuarioAutenticado() *UsuarioAutencicado {
-	return &UsuarioAutencicado{
+func (u *UsuarioRepository) ToUsuarioAutenticado() *UsuarioAutenticado {
+	return &UsuarioAutenticado{
 		ID:    u.ID,
 		Nome:  u.Nome,
 		Email: u.Email,

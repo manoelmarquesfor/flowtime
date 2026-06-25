@@ -26,7 +26,7 @@ func NewService(repository *Repository) *Service {
 func (s *Service) get(
 	ctx context.Context,
 	idUsuario string,
-	usuarioAutenticado helpauth.UsuarioAutencicado,
+	usuarioAutenticado helpauth.UsuarioAutenticado,
 ) (Usuario, error) {
 	var result Usuario
 
@@ -49,7 +49,7 @@ func (s *Service) get(
 
 func (s *Service) getAll(
 	ctx context.Context,
-	usuarioAutenticado helpauth.UsuarioAutencicado,
+	usuarioAutenticado helpauth.UsuarioAutenticado,
 ) ([]Usuario, error) {
 	result := []Usuario{}
 
@@ -72,7 +72,7 @@ func (s *Service) getAll(
 func (s *Service) create(
 	ctx context.Context,
 	usuario UsuarioCreate,
-	usuarioAutenticado helpauth.UsuarioAutencicado,
+	usuarioAutenticado helpauth.UsuarioAutenticado,
 ) (Usuario, error) {
 	var result Usuario
 
@@ -114,7 +114,7 @@ func (s *Service) create(
 func (s *Service) delete(
 	ctx context.Context,
 	idUsuario string,
-	usuarioAutenticado helpauth.UsuarioAutencicado,
+	usuarioAutenticado helpauth.UsuarioAutenticado,
 ) error {
 	if err := s.validarPermissao(usuarioAutenticado); err != nil {
 		return err
@@ -133,7 +133,7 @@ func (s *Service) delete(
 	return nil
 }
 
-func (s *Service) validarPermissao(usuarioAutenticado helpauth.UsuarioAutencicado) error {
+func (s *Service) validarPermissao(usuarioAutenticado helpauth.UsuarioAutenticado) error {
 	if usuarioAutenticado.Regra != constantes.RegraAdmin {
 		return errs.NewForbiddenError()
 	}
