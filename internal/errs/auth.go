@@ -10,6 +10,16 @@ func NewUnauthorizedError() *UnauthorizedError {
 	return &UnauthorizedError{}
 }
 
+type ForbiddenError struct{}
+
+func (e *ForbiddenError) Error() string {
+	return "Acesso proibido"
+}
+
+func NewForbiddenError() *ForbiddenError {
+	return &ForbiddenError{}
+}
+
 type InvalidTokenError struct {
 	Message string
 }
