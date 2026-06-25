@@ -9,6 +9,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/pressly/goose/v3 v3.27.1
+	golang.org/x/crypto v0.50.0
 	modernc.org/sqlite v1.53.0
 )
 
