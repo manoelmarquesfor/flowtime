@@ -9,6 +9,6 @@ type Usuario struct {
 	Nome     string    `db:"nome"`
 	Email    string    `db:"email"`
 	Password string    `db:"password"`
-	Regra    string    `db:"regra"`
+	Perfil   string    `db:"perfil"`
 	Ativo    bool      `db:"ativo"`
 }

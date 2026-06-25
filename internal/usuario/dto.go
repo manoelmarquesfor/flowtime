@@ -8,7 +8,7 @@ import (
 )
 
 func (dto UsuarioCreate) UsuarioCreateRepository(newPassword string) UsuarioCreateRepository {
-	dto.Regra = strings.ToUpper(dto.Regra)
+	dto.Perfil = strings.ToUpper(dto.Perfil)
 	dto.Nome = strings.TrimSpace(dto.Nome)
 	dto.Email = strings.TrimSpace(dto.Email)
 
@@ -17,7 +17,7 @@ func (dto UsuarioCreate) UsuarioCreateRepository(newPassword string) UsuarioCrea
 		Nome:      dto.Nome,
 		Email:     dto.Email,
 		Password:  newPassword,
-		Regra:     dto.Regra,
+		Perfil:    dto.Perfil,
 		Ativo:     true,
 		DtCreated: time.Now(),
 	}
@@ -25,20 +25,20 @@ func (dto UsuarioCreate) UsuarioCreateRepository(newPassword string) UsuarioCrea
 
 func (dto UsuarioRepository) ToUsuario() Usuario {
 	return Usuario{
-		ID:    dto.ID,
-		Nome:  dto.Nome,
-		Email: dto.Email,
-		Regra: dto.Regra,
-		Ativo: dto.Ativo,
+		ID:     dto.ID,
+		Nome:   dto.Nome,
+		Email:  dto.Email,
+		Perfil: dto.Perfil,
+		Ativo:  dto.Ativo,
 	}
 }
 
 func (dto UsuarioCreateRepository) ToUsuario() Usuario {
 	return Usuario{
-		ID:    dto.ID,
-		Nome:  dto.Nome,
-		Email: dto.Email,
-		Regra: dto.Regra,
-		Ativo: dto.Ativo,
+		ID:     dto.ID,
+		Nome:   dto.Nome,
+		Email:  dto.Email,
+		Perfil: dto.Perfil,
+		Ativo:  dto.Ativo,
 	}
 }

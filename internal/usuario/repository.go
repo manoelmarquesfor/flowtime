@@ -50,7 +50,7 @@ func (r *Repository) UsuarioByEmail(ctx context.Context, email string) (UsuarioR
 			id,
 			nome,
 			email,
-			regra,
+			perfil,
 			ativo					
 		FROM usuario WHERE email = ?`
 
@@ -74,7 +74,7 @@ func (r *Repository) UsuarioByID(ctx context.Context, userID uuid.UUID) (Usuario
 			id,
 			nome,
 			email,
-			regra,
+			perfil,
 			ativo					
 		FROM usuario WHERE id = ?`
 
@@ -98,7 +98,7 @@ func (r *Repository) UsuarioAll(ctx context.Context) ([]UsuarioRepository, error
 			id,
 			nome,
 			email,
-			regra,
+			perfil,
 			ativo					
 		FROM usuario`
 
@@ -113,11 +113,11 @@ func (r *Repository) UsuarioAll(ctx context.Context) ([]UsuarioRepository, error
 func (r *Repository) UsuarioCreate(ctx context.Context, user UsuarioCreateRepository) error {
 	query := `
 		INSERT INTO usuario 
-		(id, nome, email, password, regra, ativo,dt_criacao)
+		(id, nome, email, password, perfil, ativo,dt_criacao)
 		VALUES (?, ?, ?, ?, ?, ?, ?);`
 
 	_, err := r.db.ExecContext(ctx, query,
-		user.ID, user.Nome, user.Email, user.Password, user.Regra, user.Ativo, user.DtCreated)
+		user.ID, user.Nome, user.Email, user.Password, user.Perfil, user.Ativo, user.DtCreated)
 	if err != nil {
 		return errs.NewRepositoryError("Erro ao criar usuário: " + err.Error())
 	}
@@ -130,11 +130,11 @@ func (r *Repository) UsuarioUpdate(ctx context.Context, user UsuarioRepository) 
 		UPDATE usuario
 			SET nome = ?,
 				email = ?,
-			    regra = ?,
+			    perfil = ?,
 			    ativo = ?
 		WHERE id = ?;`
 
-	result, err := r.db.ExecContext(ctx, query, user.Nome, user.Email, user.Regra, user.Ativo, user.ID)
+	result, err := r.db.ExecContext(ctx, query, user.Nome, user.Email, user.Perfil, user.Ativo, user.ID)
 	if err != nil {
 		return errs.NewRepositoryError("Erro ao atualizar usuário: " + err.Error())
 	}

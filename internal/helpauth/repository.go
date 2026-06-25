@@ -29,7 +29,7 @@ func (r *Repository) UsuarioBySessao(ctx context.Context, sessaoID uuid.UUID) (U
 			id,
 			nome,
 			email,
-			regra,
+			perfil,
 			ativo					
 		FROM usuario WHERE sessao_id = ?`
 

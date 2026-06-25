@@ -30,7 +30,7 @@ func (r *Repository) UsuarioByEmail(ctx context.Context, email string) (Usuario,
 			nome,
 			email,
 			password,
-			regra,
+			perfil,
 			ativo					
 		FROM usuario WHERE email = ?`
 

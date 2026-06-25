@@ -6,5 +6,5 @@ Content-Type: application/json
  "nome": "Admin",
  "email": "admin1@admin.com",
  "password": "senha@123",
- "regra": "ADMIN"
+ "perfil": "ADMIN"
 }

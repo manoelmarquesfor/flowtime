@@ -5,13 +5,13 @@ CREATE TABLE usuario (
     email VARCHAR(255) NOT NULL UNIQUE,
     password TEXT NOT NULL,
     sessao_id UUID,
-    regra VARCHAR(50) NOT NULL,
+    perfil VARCHAR(50) NOT NULL,
     ativo BOOLEAN NOT NULL DEFAULT TRUE,
     dt_criacao TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 CREATE INDEX idx_usuario_email ON usuario(email);
 CREATE INDEX idx_usuario_sessao_id ON usuario(sessao_id);
-INSERT INTO usuario (id, nome, email, password, regra, ativo)
+INSERT INTO usuario (id, nome, email, password, perfil, ativo)
 VALUES (
         '439b7929-1906-44bb-b8af-158a7dd5d6de',
         'Administrador',

@@ -134,7 +134,7 @@ func (s *Service) delete(
 }
 
 func (s *Service) validarPermissao(usuarioAutenticado helpauth.UsuarioAutenticado) error {
-	if usuarioAutenticado.Regra != constantes.RegraAdmin {
+	if usuarioAutenticado.Perfil != constantes.PerfilAdmin {
 		return errs.NewForbiddenError()
 	}
 
