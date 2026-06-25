@@ -1,0 +1,6 @@
+@port = 8000
+@data = 2026-01-01
+
+DELETE http://localhost:{{port}}/api/feriado/{{data}}
+Content-Type: application/json
+

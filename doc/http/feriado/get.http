@@ -1,0 +1,6 @@
+@port = 8000
+@ano = 2026
+
+GET http://localhost:{{port}}/api/feriado?ano={{ano}}
+Content-Type: application/json
+

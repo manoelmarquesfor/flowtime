@@ -1,0 +1,8 @@
+@port = 8000
+POST http://localhost:{{port}}/api/feriado
+Content-Type: application/json
+
+{
+ "descricao": "Dia do Lapis",
+ "data": "2026-02-20"
+}
