@@ -24,13 +24,7 @@ func (dto UsuarioCreate) UsuarioCreateRepository(newPassword string) UsuarioCrea
 }
 
 func (dto UsuarioRepository) ToUsuario() Usuario {
-	return Usuario{
-		ID:     dto.ID,
-		Nome:   dto.Nome,
-		Email:  dto.Email,
-		Perfil: dto.Perfil,
-		Ativo:  dto.Ativo,
-	}
+	return Usuario(dto)
 }
 
 func (dto UsuarioCreateRepository) ToUsuario() Usuario {
