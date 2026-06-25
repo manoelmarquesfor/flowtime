@@ -7,7 +7,7 @@ func (e *UnauthorizedError) Error() string {
 }
 
 func NewUnauthorizedError() *UnauthorizedError {
-	return new(UnauthorizedError)
+	return &UnauthorizedError{}
 }
 
 type InvalidTokenError struct {
