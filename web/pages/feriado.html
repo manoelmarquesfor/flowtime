@@ -95,7 +95,7 @@
             const ano = inputAno.value;
             if (!ano) return;
             try {
-                const data = await apiFetch(`/feriados/ano/${ano}`);
+                const data = await apiFetch(`/feriado?ano=${ano}`);
                 renderTable(data);
             } catch (e) {
                 document.getElementById("tabela-container").innerHTML = `<div class="empty-state">Erro ao buscar dados.</div>`;
@@ -105,7 +105,7 @@
         async function remover(dataIso) {
             if (!confirm(`Excluir feriado do dia ${dataIso}?`)) return;
             try {
-                await apiFetch(`/feriados/${encodeURIComponent(dataIso)}`, { method: "DELETE" });
+                await apiFetch(`/feriado/${encodeURIComponent(dataIso)}`, { method: "DELETE" });
                 showToast("Feriado removido!", "success");
                 buscarFeriados();
             } catch (e) { }
@@ -120,7 +120,7 @@
                     data: e.target.data.value,
                     descricao: e.target.descricao.value.trim()
                 };
-                await apiFetch("/feriados/", {
+                await apiFetch("/feriado/", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(payload)

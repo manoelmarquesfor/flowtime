@@ -50,7 +50,7 @@ async function apiFetch(url, options = {}) {
 
 
 async function rawFetch(url, options = {}) {
-    return fetch(url, {
+    return fetch("/api" + url, {
         credentials: "include",
         ...options
     });
