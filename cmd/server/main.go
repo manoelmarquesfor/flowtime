@@ -14,6 +14,7 @@ import (
 	"github/manoelmarquesfor/flowtime/internal/auth"
 	"github/manoelmarquesfor/flowtime/internal/config"
 	"github/manoelmarquesfor/flowtime/internal/database"
+	"github/manoelmarquesfor/flowtime/internal/feriado"
 	"github/manoelmarquesfor/flowtime/internal/helpauth"
 	"github/manoelmarquesfor/flowtime/internal/middleware"
 	"github/manoelmarquesfor/flowtime/internal/usuario"
@@ -89,9 +90,11 @@ func setupServer(config *config.Config) *http.Server {
 	middleware.Setup(router)
 	web.Setup(router)
 
-	setupRouterAuth(router, database)
-	setupRouterUsuario(router, database, validateSessaoMiddleware)
-
+	router.Route("/api", func(api chi.Router) {
+		setupRouterAuth(api, database)
+		setupRouterUsuario(api, database, validateSessaoMiddleware)
+		setupRouterFeriado(api, database, validateSessaoMiddleware)
+	})
 	srv := &http.Server{
 		Addr:              fmt.Sprintf(":%d", config.Server.Port),
 		Handler:           router,
@@ -102,7 +105,7 @@ func setupServer(config *config.Config) *http.Server {
 	return srv
 }
 
-func setupRouterAuth(router *chi.Mux, database *sqlx.DB) {
+func setupRouterAuth(router chi.Router, database *sqlx.DB) {
 	authRepository := auth.NewRepository(database)
 	authService := auth.NewService(authRepository)
 	authHandler := auth.NewHandler(authService)
@@ -111,7 +114,7 @@ func setupRouterAuth(router *chi.Mux, database *sqlx.DB) {
 }
 
 func setupRouterUsuario(
-	router *chi.Mux,
+	router chi.Router,
 	database *sqlx.DB,
 	validateSessaoMiddleware *middleware.ValidateSessaoMiddleware,
 ) {
@@ -120,4 +123,16 @@ func setupRouterUsuario(
 	usuarioHandler := usuario.NewHandler(usuarioService)
 
 	usuarioHandler.RegisterRoutes(router, validateSessaoMiddleware)
+}
+
+func setupRouterFeriado(
+	router chi.Router,
+	database *sqlx.DB,
+	validateSessaoMiddleware *middleware.ValidateSessaoMiddleware,
+) {
+	feriadoRepository := feriado.NewRepository(database)
+	feriadoService := feriado.NewService(feriadoRepository)
+	feriadoHandler := feriado.NewHandler(feriadoService)
+
+	feriadoHandler.RegisterRoutes(router, validateSessaoMiddleware)
 }
