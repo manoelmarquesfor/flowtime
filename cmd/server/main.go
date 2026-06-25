@@ -14,10 +14,13 @@ import (
 	"github/manoelmarquesfor/flowtime/internal/auth"
 	"github/manoelmarquesfor/flowtime/internal/config"
 	"github/manoelmarquesfor/flowtime/internal/database"
+	"github/manoelmarquesfor/flowtime/internal/helpauth"
 	"github/manoelmarquesfor/flowtime/internal/middleware"
+	"github/manoelmarquesfor/flowtime/internal/usuario"
 	"github/manoelmarquesfor/flowtime/web"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/jmoiron/sqlx"
 )
 
 const (
@@ -79,15 +82,15 @@ func setupServer(config *config.Config) *http.Server {
 		log.Fatal(err)
 	}
 
+	helpauthRepository := helpauth.NewRepository(database)
+	validateSessaoMiddleware := middleware.NewValidateSessaoMiddleware(helpauthRepository)
+
 	router := chi.NewRouter()
 	middleware.Setup(router)
 	web.Setup(router)
 
-	authRepository := auth.NewRepository(database)
-	authService := auth.NewService(authRepository)
-	authHandler := auth.NewHandler(authService)
-
-	authHandler.RegisterRoutes(router)
+	setupRouterAuth(router, database)
+	setupRouterUsuario(router, database, validateSessaoMiddleware)
 
 	srv := &http.Server{
 		Addr:              fmt.Sprintf(":%d", config.Server.Port),
@@ -97,4 +100,24 @@ func setupServer(config *config.Config) *http.Server {
 	}
 
 	return srv
+}
+
+func setupRouterAuth(router *chi.Mux, database *sqlx.DB) {
+	authRepository := auth.NewRepository(database)
+	authService := auth.NewService(authRepository)
+	authHandler := auth.NewHandler(authService)
+
+	authHandler.RegisterRoutes(router)
+}
+
+func setupRouterUsuario(
+	router *chi.Mux,
+	database *sqlx.DB,
+	validateSessaoMiddleware *middleware.ValidateSessaoMiddleware,
+) {
+	usuarioRepository := usuario.NewRepository(database)
+	usuarioService := usuario.NewService(usuarioRepository)
+	usuarioHandler := usuario.NewHandler(usuarioService)
+
+	usuarioHandler.RegisterRoutes(router, validateSessaoMiddleware)
 }
