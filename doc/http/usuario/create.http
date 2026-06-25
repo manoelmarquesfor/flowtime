@@ -1,5 +1,5 @@
 @port = 8000
-POST http://localhost:{{port}}/usuario
+POST http://localhost:{{port}}/api/usuario
 Content-Type: application/json
 
 {

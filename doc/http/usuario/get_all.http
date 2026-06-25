@@ -1,4 +1,4 @@
 @port = 8000
-GET http://localhost:{{port}}/usuario
+GET http://localhost:{{port}}/api/usuario
 Content-Type: application/json
 

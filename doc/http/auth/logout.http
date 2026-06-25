@@ -1,4 +1,4 @@
 
 @port = 8000
-DELETE http://localhost:{{port}}/auth/logout
+DELETE http://localhost:{{port}}/api/auth/logout
 Content-Type: application/json
