@@ -4,6 +4,8 @@ import (
 	"errors"
 
 	"github.com/jmoiron/sqlx"
+
+	// Registra o driver SQLite no database/sql.
 	_ "modernc.org/sqlite"
 )
 
