@@ -1,0 +1,6 @@
+@port = 8000
+@userId = a94c4515-2e9e-4c0e-8d18-147c017e14eb
+
+DELETE http://localhost:{{port}}/usuario/{{userId}}
+Content-Type: application/json
+
