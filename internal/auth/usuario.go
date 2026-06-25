@@ -1,18 +1,14 @@
 package auth
 
 import (
-	"time"
-
 	"github.com/google/uuid"
 )
 
 type Usuario struct {
-	ID        uuid.UUID  `sqlx:"id"`
-	Nome      string     `sqlx:"nome"`
-	Email     string     `sqlx:"email"`
-	Password  string     `sqlx:"password"`
-	SessaoID  *uuid.UUID `sqlx:"sessao_id"`
-	Regra     string     `sqlx:"regra"`
-	Ativo     bool       `sqlx:"ativo"`
-	DtCriacao time.Time  `sqlx:"dt_criacao"`
+	ID       uuid.UUID `db:"id"`
+	Nome     string    `db:"nome"`
+	Email    string    `db:"email"`
+	Password string    `db:"password"`
+	Regra    string    `db:"regra"`
+	Ativo    bool      `db:"ativo"`
 }
