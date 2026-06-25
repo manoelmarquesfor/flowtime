@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 
-	"github/manoelmarquesfor/flowtime/internal/constantes"
 	"github/manoelmarquesfor/flowtime/internal/errs"
 	"github/manoelmarquesfor/flowtime/internal/helpauth"
 	"github/manoelmarquesfor/flowtime/internal/webutil"
@@ -30,8 +29,8 @@ func (s *Service) get(
 ) (Usuario, error) {
 	var result Usuario
 
-	if err := s.validarPermissao(usuarioAutenticado); err != nil {
-		return result, err
+	if !helpauth.PerfilIsAdmin(usuarioAutenticado) {
+		return result, errs.NewForbiddenError()
 	}
 
 	userID, err := uuid.Parse(idUsuario)
@@ -53,8 +52,8 @@ func (s *Service) getAll(
 ) ([]Usuario, error) {
 	result := []Usuario{}
 
-	if err := s.validarPermissao(usuarioAutenticado); err != nil {
-		return result, err
+	if !helpauth.PerfilIsAdmin(usuarioAutenticado) {
+		return result, errs.NewForbiddenError()
 	}
 
 	usuariosRepository, err := s.repository.UsuarioAll(ctx)
@@ -76,8 +75,8 @@ func (s *Service) create(
 ) (Usuario, error) {
 	var result Usuario
 
-	if err := s.validarPermissao(usuarioAutenticado); err != nil {
-		return result, err
+	if !helpauth.PerfilIsAdmin(usuarioAutenticado) {
+		return result, errs.NewForbiddenError()
 	}
 
 	err := webutil.ValidateStruct(usuario)
@@ -116,8 +115,8 @@ func (s *Service) delete(
 	idUsuario string,
 	usuarioAutenticado helpauth.UsuarioAutenticado,
 ) error {
-	if err := s.validarPermissao(usuarioAutenticado); err != nil {
-		return err
+	if !helpauth.PerfilIsAdmin(usuarioAutenticado) {
+		return errs.NewForbiddenError()
 	}
 
 	userID, err := uuid.Parse(idUsuario)
@@ -128,14 +127,6 @@ func (s *Service) delete(
 	err = s.repository.UsuarioDelete(ctx, userID)
 	if err != nil {
 		return err
-	}
-
-	return nil
-}
-
-func (s *Service) validarPermissao(usuarioAutenticado helpauth.UsuarioAutenticado) error {
-	if usuarioAutenticado.Perfil != constantes.PerfilAdmin {
-		return errs.NewForbiddenError()
 	}
 
 	return nil
