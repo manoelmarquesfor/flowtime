@@ -9,3 +9,7 @@ create-migration:
 run-app:
 	@echo "Running the application..."
 	@go run cmd/server/main.go
+
+run-linter:
+	@echo "Running linter..."
+	@golangci-lint run

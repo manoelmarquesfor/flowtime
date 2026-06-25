@@ -1,0 +1,85 @@
+# Configuração para golangci-lint v1.x
+
+run:
+  # Tempo máximo de execução do lint.
+  timeout: 5m
+
+  # Também executa os linters nos arquivos *_test.go.
+  tests: true
+
+linters:
+  enable:
+    # Verifica erros retornados que foram ignorados.
+    - errcheck
+
+    # Análises oficiais do Go para detectar bugs comuns.
+    - govet
+
+    # Conjunto de análises avançadas (recomendado para todos os projetos).
+    - staticcheck
+
+    # Sugestões de simplificação do código.
+    - gosimple
+
+    # Detecta variáveis atribuídas mas nunca utilizadas.
+    - ineffassign
+
+    # Detecta código morto (funções, variáveis, tipos não utilizados).
+    - unused
+
+    # Corrige erros comuns de ortografia em comentários e strings.
+    - misspell
+
+    # Substitui o golint. Verifica estilo e boas práticas.
+    - revive
+
+    # Detecta conversões de tipo desnecessárias.
+    - unconvert
+
+    # Detecta parâmetros de função que nunca são utilizados.
+    - unparam
+
+    # Evita capturar a variável errada em loops com goroutines/closures.
+    - copyloopvar
+
+    # Diversas verificações extras de qualidade de código.
+    - gocritic
+
+    # Garante que response.Body seja fechado após requisições HTTP.
+    - bodyclose
+
+    # Incentiva o uso correto de errors.Is/errors.As e wrapping de erros.
+    - errorlint
+
+    # Detecta retornos inconsistentes envolvendo nil e error.
+    - nilerr
+
+    # Identifica chamadas que deveriam receber um context.Context.
+    - noctx
+
+    # Sugere pré-alocação de slices quando possível.
+    - prealloc
+
+    # Obriga um estilo específico de linhas em branco.
+    - wsl
+
+    # Obriga linha em branco antes de return.
+    - nlreturn
+
+
+  disable:
+    # Restringe imports. Útil em projetos grandes, mas costuma ser inconveniente.
+    - depguard
+
+    # Exige inicializar todos os campos de structs.
+    - exhaustruct
+
+    # Reclama de nomes curtos como i, j, db, tx, etc.
+    - varnamelen
+
+issues:
+  # Não limita a quantidade de problemas por linter.
+  max-issues-per-linter: 0
+
+  # Não limita a quantidade de ocorrências iguais.
+  max-same-issues: 0
