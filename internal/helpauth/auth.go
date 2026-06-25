@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 
+	"github/manoelmarquesfor/flowtime/internal/constantes"
 	"github/manoelmarquesfor/flowtime/internal/errs"
 )
 
@@ -29,4 +30,12 @@ func GetUserRequisicao(r *http.Request) (UsuarioAutenticado, error) {
 
 func SetUserRequisicao(r *http.Request, user *UsuarioAutenticado) *http.Request {
 	return r.WithContext(context.WithValue(r.Context(), userContextKey, user))
+}
+
+func PerfilIsAdmin(usuario UsuarioAutenticado) bool {
+	return usuario.Perfil == constantes.PerfilAdmin
+}
+
+func PerfilIsUser(usuario UsuarioAutenticado) bool {
+	return usuario.Perfil == constantes.PerfilUser
 }
