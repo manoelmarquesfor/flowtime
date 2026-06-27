@@ -24,6 +24,7 @@ func Setup(router *chi.Mux) {
 	router.Get("/relatorio", servePage("relatorio.html"))
 	router.Get("/ponto-matricula", servePage("ponto-matricula.html"))
 	router.Get("/ponto-tag", servePage("ponto-tag.html"))
+	router.Get("/usuario", servePage("usuario.html"))
 
 	router.Handle("/assets/*",
 		http.StripPrefix("/assets/",
