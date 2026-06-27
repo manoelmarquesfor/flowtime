@@ -90,8 +90,15 @@ func (r *Repository) UsuarioByID(ctx context.Context, userID uuid.UUID) (Usuario
 	return usuario, nil
 }
 
-func (r *Repository) UsuarioAll(ctx context.Context) ([]UsuarioRepository, error) {
+func (r *Repository) UsuarioAll(ctx context.Context, ativo *bool) ([]UsuarioRepository, error) {
 	var usuarios []UsuarioRepository
+
+	where := ""
+	args := []interface{}{}
+	if ativo != nil {
+		where = "WHERE ativo = ?"
+		args = append(args, *ativo)
+	}
 
 	query := `
 		SELECT
@@ -100,9 +107,10 @@ func (r *Repository) UsuarioAll(ctx context.Context) ([]UsuarioRepository, error
 			email,
 			perfil,
 			ativo					
-		FROM usuario`
+		FROM usuario
+		` + where
 
-	err := r.db.SelectContext(ctx, &usuarios, query)
+	err := r.db.SelectContext(ctx, &usuarios, query, args...)
 	if err != nil {
 		return usuarios, errs.NewRepositoryError("Erro ao buscar usuários: " + err.Error())
 	}

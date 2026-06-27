@@ -26,6 +26,7 @@ func (h *Handler) RegisterRoutes(router chi.Router, validateSessaoMiddleware *mi
 		r.Get("/", h.getAll)
 		r.Get("/{id}", h.get)
 		r.Post("/", h.create)
+		r.Put("/alterar-situacao/{id}", h.alterarSituacao)
 		r.Delete("/{id}", h.delete)
 	})
 }
@@ -58,7 +59,9 @@ func (h *Handler) getAll(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	users, err := h.service.getAll(r.Context(), usuarioAutenticado)
+	ativo := r.URL.Query().Get("ativo")
+
+	users, err := h.service.getAll(r.Context(), usuarioAutenticado, ativo)
 	if err != nil {
 		webutil.ResponseError(w, err)
 
@@ -93,6 +96,26 @@ func (h *Handler) create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	webutil.Response(w, http.StatusCreated, userCreated)
+}
+
+func (h *Handler) alterarSituacao(w http.ResponseWriter, r *http.Request) {
+	usuarioAutenticado, err := helpauth.GetUserRequisicao(r)
+	if err != nil {
+		webutil.ResponseError(w, err)
+
+		return
+	}
+
+	id := chi.URLParam(r, "id")
+
+	userUpdated, err := h.service.alterarSituacao(r.Context(), id, usuarioAutenticado)
+	if err != nil {
+		webutil.ResponseError(w, err)
+
+		return
+	}
+
+	webutil.Response(w, http.StatusOK, userUpdated)
 }
 
 func (h *Handler) delete(w http.ResponseWriter, r *http.Request) {
