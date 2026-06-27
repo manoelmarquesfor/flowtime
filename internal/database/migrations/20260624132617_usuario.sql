@@ -16,8 +16,8 @@ VALUES (
         '439b7929-1906-44bb-b8af-158a7dd5d6de',
         'Administrador',
         'admin@admin.com',
-        '$2a$10$8MVfJuY3ndbIs5wOmT5dFePplpObMh/ebg.IsMTB9XxEKFqnZZwLu',
-        'ADMIN',
+        '$2a$10$W5UWdPj2grKnge.YTN8tx.Ad4xuNi7HBn3NbO9KYDlNZUOX9rCx0m',
+        'MASTER',
         TRUE
     );
 -- +goose Down
