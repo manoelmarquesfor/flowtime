@@ -252,7 +252,7 @@
         async function loadCollaborators() {
             try {
                 // apiFetch lida com try/catch e toast interno
-                const data = await apiFetch(`${API_BASE}/colaborador/?ativo=${ativoStatus}`);
+                const data = await apiFetch(`/colaborador/?ativo=${ativoStatus}`);
                 renderSelectOptions(data);
             } catch (error) {
                 // Erro já tratado no utils.js
@@ -312,8 +312,8 @@
 
             try {
                 let url = selectedCollaboratorId === 'todos'
-                    ? `${API_BASE}/relatorios/periodo?data_inicio=${dataInicio}&data_fim=${dataFim}`
-                    : `${API_BASE}/relatorios/periodo/colaborador/${selectedCollaboratorId}?data_inicio=${dataInicio}&data_fim=${dataFim}`;
+                    ? `/relatorios/periodo?data_inicio=${dataInicio}&data_fim=${dataFim}`
+                    : `/relatorios/periodo/colaborador/${selectedCollaboratorId}?data_inicio=${dataInicio}&data_fim=${dataFim}`;
 
                 const data = await apiFetch(url);
                 renderResults(data, dataInicio, dataFim);
@@ -511,7 +511,7 @@
         async function salvarPonto(id, status, observacao) {
             try {
                 const payload = { status: status || null, observacao: observacao || null };
-                await apiFetch(`${API_BASE}/ponto/${id}`, {
+                await apiFetch(`/ponto/${id}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload),
@@ -559,7 +559,7 @@
                     params.set('colaborador', selectedCollaboratorId);
                 }
 
-                const res = await apiFetch(`${API_BASE}/relatorios/gerar-preenchimento?${params.toString()}`, { method: 'PUT' });
+                const res = await apiFetch(`/relatorios/gerar-preenchimento?${params.toString()}`, { method: 'PUT' });
                 showToast(res.detail || 'Preenchimento gerado com sucesso!', 'success');
                 loadRelatorio();
             } catch (error) {
