@@ -208,3 +208,29 @@ select option {
 .field {
     margin: 0;
 }
+
+.radio-group {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    background: rgba(255, 255, 255, .03);
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+}
+
+.radio-group label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--text);
+}
+
+input[type="radio"],
+input[type="checkbox"] {
+    width: auto;
+    transition: none;
+}
