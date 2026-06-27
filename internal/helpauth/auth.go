@@ -33,7 +33,7 @@ func SetUserRequisicao(r *http.Request, user *UsuarioAutenticado) *http.Request 
 }
 
 func PerfilIsAdmin(usuario UsuarioAutenticado) bool {
-	return usuario.Perfil == constantes.PerfilAdmin
+	return usuario.Perfil == constantes.PerfilAdmin || usuario.Perfil == constantes.PerfilMaster
 }
 
 func PerfilIsUser(usuario UsuarioAutenticado) bool {

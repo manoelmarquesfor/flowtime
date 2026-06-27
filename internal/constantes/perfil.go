@@ -1,6 +1,7 @@
 package constantes
 
 const (
-	PerfilAdmin string = "ADMIN"
-	PerfilUser  string = "USER"
+	PerfilMaster string = "MASTER"
+	PerfilAdmin  string = "ADMIN"
+	PerfilUser   string = "USER"
 )
