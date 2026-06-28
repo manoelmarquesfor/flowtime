@@ -7,13 +7,15 @@ import (
 	"io"
 	"reflect"
 	"strings"
+
+	"github/manoelmarquesfor/flowtime/internal/errs"
 )
 
-var (
-	ErrInvalidJSON      = errors.New("json inválido")
-	ErrEmptyBody        = errors.New("corpo da requisição vazio")
-	ErrUnknownField     = errors.New("campo desconhecido no json")
-	ErrInvalidFieldType = errors.New("tipo de campo inválido")
+const (
+	jsonInvalido          string = "json inválido"
+	corpoRequisicaoVazio  string = "corpo da requisição vazio"
+	campoDesconhecidoJson string = "campo desconhecido no json"
+	tipoCampoInvalido     string = "tipo de campo inválido"
 )
 
 func DecodeJSON(body io.Reader, v any) error {
@@ -25,7 +27,7 @@ func DecodeJSON(body io.Reader, v any) error {
 	}
 
 	if decoder.Decode(&struct{}{}) != io.EOF {
-		return ErrInvalidJSON
+		return errs.NewEntidadeError(jsonInvalido)
 	}
 
 	return nil
@@ -63,21 +65,22 @@ func jsonFieldName(value any, fieldName string) string {
 func parseJSONError(value any, err error) error {
 	var typeErr *json.UnmarshalTypeError
 	if errors.As(err, &typeErr) {
-		return fmt.Errorf(
-			"%w: campo '%s' tem tipo inválido, esperado '%s'",
-			ErrInvalidFieldType,
+		msg := fmt.Sprintf(
+			"%s: campo '%s' tem tipo inválido, esperado '%s'",
+			tipoCampoInvalido,
 			jsonFieldName(value, typeErr.Field),
 			typeErr.Type.String(),
 		)
+		return errs.NewEntidadeError(msg)
 	}
 
 	var syntaxErr *json.SyntaxError
 	if errors.As(err, &syntaxErr) {
-		return ErrInvalidJSON
+		return errs.NewEntidadeError(jsonInvalido)
 	}
 
 	if errors.Is(err, io.EOF) {
-		return ErrEmptyBody
+		return errs.NewEntidadeError(corpoRequisicaoVazio)
 	}
 
 	return err
