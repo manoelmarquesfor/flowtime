@@ -89,7 +89,6 @@
                         <label><input type="radio" name="filtro-ativo" value="true" checked /> Ativos</label>
                         <label><input type="radio" name="filtro-ativo" value="false" /> Inativos</label>
                     </div>
-                    <button id="btn-buscar" class="btn-secondary">🔍 Buscar</button>
                 </div>
 
                 <div id="tabela-container" class="table-wrap">
@@ -102,7 +101,6 @@
     <script src="/assets/utils.js"></script>
     <script>
         const formCadastro = document.getElementById("form-cadastro");
-        const btnBuscar = document.getElementById("btn-buscar");
         const tabelaContainer = document.getElementById("tabela-container");
 
         function getFiltroAtivo() {
@@ -119,7 +117,6 @@
             let html = `<table>
                 <thead>
                     <tr>
-                        <th>ID</th>
                         <th>Nome</th>
                         <th>Matrícula</th>
                         <th>Tag</th>
@@ -134,26 +131,42 @@
                 const statusClass = item.ativo ? "active" : "inactive";
                 const statusLabel = item.ativo ? "Ativo" : "Inativo";
 
-                let actionBtn = '<span style="color: var(--muted); font-size: 0.85rem;">Sem ação</span>';
-                if (item.ativo) {
-                    actionBtn = `<button class="btn-danger" style="padding: 6px 12px; font-size: 0.8rem" onclick="inativarColaborador(${item.id}, '${item.nome}')">Inativar</button>`;
-                }
-
                 html += `
                     <tr>
-                        <td>${item.id ?? "-"}</td>
                         <td><strong>${item.nome ?? "-"}</strong></td>
                         <td>${item.matricula ?? "-"}</td>
                         <td>${item.tag ?? "-"}</td>
                         <td>${item.setor ?? "-"}</td>
                         <td><span class="tag ${statusClass}">${statusLabel}</span></td>
-                        <td>${actionBtn}</td>
+                        <td class="action-cell" data-id="${item.id}" data-nome="${(item.nome ?? '').replace(/"/g, '&quot;')}" data-ativo="${item.ativo}"></td>
                     </tr>
                 `;
             });
 
             html += `</tbody></table>`;
             tabelaContainer.innerHTML = html;
+
+            // Adiciona botões via DOM após renderizar — evita problemas com caracteres especiais no onclick inline
+            tabelaContainer.querySelectorAll(".action-cell").forEach(cell => {
+                const id = cell.dataset.id;
+                const nome = cell.dataset.nome;
+                const ativo = cell.dataset.ativo === "true";
+
+                const btn = document.createElement("button");
+                btn.style.cssText = "padding: 6px 12px; font-size: 0.8rem";
+
+                if (ativo) {
+                    btn.className = "btn-danger";
+                    btn.textContent = "Inativar";
+                    btn.addEventListener("click", () => inativarColaborador(id, nome));
+                } else {
+                    btn.className = "btn-main";
+                    btn.textContent = "Ativar";
+                    btn.addEventListener("click", () => ativarColaborador(id, nome));
+                }
+
+                cell.appendChild(btn);
+            });
         }
 
         async function inativarColaborador(id, nome) {
@@ -161,25 +174,28 @@
 
             try {
                 // apiFetch trata erros automaticamente e lança Toast
-                await apiFetch(`/colaborador/inativar/${id}`, { method: "PUT" });
+                await apiFetch(`/colaborador/alterar-situacao/${id}`, { method: "PUT" });
                 showToast("Colaborador inativado com sucesso!", "success");
                 buscarColaboradores();
             } catch (error) { }
         }
 
-        async function buscarColaboradores() {
-            btnBuscar.disabled = true;
-            btnBuscar.textContent = "⏳ Buscando...";
+        async function ativarColaborador(id, nome) {
+            if (!confirm(`Confirma ativar o colaborador ${nome}?`)) return;
+            try {
+                await apiFetch(`/colaborador/alterar-situacao/${id}`, { method: "PUT" });
+                showToast("Colaborador ativado com sucesso!", "success");
+                buscarColaboradores();
+            } catch (error) { }
+        }
 
+        async function buscarColaboradores() {
             try {
                 const ativo = getFiltroAtivo();
                 const data = await apiFetch(`/colaborador/?ativo=${ativo}`);
                 renderTabela(data);
             } catch (error) {
                 tabelaContainer.innerHTML = `<div class="empty-state">Erro ao buscar dados.</div>`;
-            } finally {
-                btnBuscar.disabled = false;
-                btnBuscar.textContent = "🔍 Buscar";
             }
         }
 
@@ -197,7 +213,7 @@
             };
 
             try {
-                const data = await apiFetch("/colaborador/registrar", {
+                const data = await apiFetch("/colaborador", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(payload),
@@ -217,7 +233,9 @@
             }
         });
 
-        btnBuscar.addEventListener("click", buscarColaboradores);
+        document.querySelectorAll("input[name='filtro-ativo']").forEach(radio => {
+            radio.addEventListener("change", buscarColaboradores);
+        });
 
         // Auto-busca ao carregar
         buscarColaboradores();
