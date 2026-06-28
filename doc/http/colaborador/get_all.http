@@ -1,0 +1,17 @@
+@port = 8000
+
+# Busca todos os usuários
+GET http://localhost:{{port}}/api/colaborador
+Content-Type: application/json
+
+
+
+###
+# Busca todos os usuários ativos
+GET http://localhost:{{port}}/api/colaborador?ativo=true
+Content-Type: application/json
+
+###
+# Busca todos os usuários inativos
+GET http://localhost:{{port}}/api/colaborador?ativo=false
+Content-Type: application/json

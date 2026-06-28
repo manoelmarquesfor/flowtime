@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github/manoelmarquesfor/flowtime/internal/auth"
+	"github/manoelmarquesfor/flowtime/internal/colaborador"
 	"github/manoelmarquesfor/flowtime/internal/config"
 	"github/manoelmarquesfor/flowtime/internal/database"
 	"github/manoelmarquesfor/flowtime/internal/feriado"
@@ -94,6 +95,7 @@ func setupServer(config *config.Config) *http.Server {
 		setupRouterAuth(api, database)
 		setupRouterUsuario(api, database, validateSessaoMiddleware)
 		setupRouterFeriado(api, database, validateSessaoMiddleware)
+		setupRouterColaborador(api, database, validateSessaoMiddleware)
 	})
 	srv := &http.Server{
 		Addr:              fmt.Sprintf(":%d", config.Server.Port),
@@ -135,4 +137,16 @@ func setupRouterFeriado(
 	feriadoHandler := feriado.NewHandler(feriadoService)
 
 	feriadoHandler.RegisterRoutes(router, validateSessaoMiddleware)
+}
+
+func setupRouterColaborador(
+	router chi.Router,
+	database *sqlx.DB,
+	validateSessaoMiddleware *middleware.ValidateSessaoMiddleware,
+) {
+	colaboradorRepository := colaborador.NewRepository(database)
+	colaboradorService := colaborador.NewService(colaboradorRepository)
+	colaboradorHandler := colaborador.NewHandler(colaboradorService)
+
+	colaboradorHandler.RegisterRoutes(router, validateSessaoMiddleware)
 }

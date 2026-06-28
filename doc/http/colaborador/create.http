@@ -1,0 +1,10 @@
+@port = 8000
+POST http://localhost:{{port}}/api/colaborador
+Content-Type: application/json
+
+{
+ "nome": "Admin",
+ "matricula": "1",
+ "tag": "1",
+ "setor": "TI"
+}

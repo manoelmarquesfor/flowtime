@@ -1,0 +1,6 @@
+@port = 8000
+@colaboradorId = 9e0ec4e5-b64e-478f-87d6-27a2a1e8c6c5
+
+GET http://localhost:{{port}}/api/colaborador/{{colaboradorId}}
+Content-Type: application/json
+

@@ -1,0 +1,6 @@
+@port = 8000
+@colaboradorId = 439b7929-1906-44bb-b8af-158a7dd5d6de
+
+PUT http://localhost:{{port}}/api/colaborador/alterar-situacao/{{colaboradorId}}
+Content-Type: application/json
+
