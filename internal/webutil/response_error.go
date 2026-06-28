@@ -21,6 +21,8 @@ func ResponseError(writer http.ResponseWriter, erro error) {
 
 	var errNotFound *errs.NotFoundError
 
+	var errEntidade *errs.EntidadeError
+
 	var errInternal *errs.InternalError
 
 	var errRepository *errs.RepositoryError
@@ -33,6 +35,7 @@ func ResponseError(writer http.ResponseWriter, erro error) {
 	case errors.As(erro, &errUnauthorized):
 		statusCode = http.StatusUnauthorized
 		msg = erro.Error()
+
 	case errors.As(erro, &errForbidden):
 		statusCode = http.StatusForbidden
 		msg = erro.Error()
@@ -41,12 +44,17 @@ func ResponseError(writer http.ResponseWriter, erro error) {
 		statusCode = http.StatusNotFound
 		msg = erro.Error()
 
+	case errors.As(erro, &errEntidade):
+		statusCode = http.StatusUnprocessableEntity
+		msg = erro.Error()
+
 	case errors.As(erro, &errInternal) || errors.As(erro, &errRepository):
 		statusCode = http.StatusInternalServerError
 
 		log.Println(erro)
 
 	default:
+		log.Println("Erro nao identificado: " + erro.Error())
 		statusCode = http.StatusInternalServerError
 	}
 
