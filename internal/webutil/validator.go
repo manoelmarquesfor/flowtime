@@ -6,13 +6,27 @@ import (
 
 	"github/manoelmarquesfor/flowtime/internal/errs"
 
+	"github.com/go-playground/locales/pt_BR"
+	ut "github.com/go-playground/universal-translator"
 	"github.com/go-playground/validator/v10"
+	pt_br_translations "github.com/go-playground/validator/v10/translations/pt_BR"
 )
 
-var custonValidator = newValidator()
+var (
+	custonValidator = newValidator()
+	uni             *ut.UniversalTranslator
+	translator      ut.Translator
+)
 
 func newValidator() *validator.Validate {
 	val := validator.New()
+
+	ptBr := pt_BR.New()
+	uni = ut.New(ptBr, ptBr)
+
+	translator, _ = uni.GetTranslator(ptBr.Locale())
+
+	pt_br_translations.RegisterDefaultTranslations(val, translator)
 
 	val.RegisterTagNameFunc(func(field reflect.StructField) string {
 		// mudando o nome do campo na mensagem de erro para o nome do campo json
@@ -35,28 +49,7 @@ func tratarErroValidacao(err error) error {
 	errValidator := &validator.ValidationErrors{}
 	if errors.As(err, errValidator) {
 		vErr := (*errValidator)[0]
-		switch vErr.Tag() {
-		case "required":
-			return errs.NewValidationError("O campo " + vErr.Field() + " é obrigatório")
-		case "max":
-			return errs.NewValidationError("O campo " + vErr.Field() + " deve ter no máximo " + vErr.Param() + " caracteres")
-		case "min":
-			return errs.NewValidationError("O campo " + vErr.Field() + " deve ter no mínimo " + vErr.Param() + " caracteres")
-		case "email":
-			return errs.NewValidationError("O campo " + vErr.Field() + " não é um email válido")
-		case "gte":
-			return errs.NewValidationError("O campo " + vErr.Field() + " deve ser maior ou igual a " + vErr.Param())
-		case "gt":
-			return errs.NewValidationError("O campo " + vErr.Field() + " deve ser maior que " + vErr.Param())
-		case "lte":
-			return errs.NewValidationError("O campo " + vErr.Field() + " deve ser menor ou igual a " + vErr.Param())
-		case "lt":
-			return errs.NewValidationError("O campo " + vErr.Field() + " deve ser menor que " + vErr.Param())
-		case "oneof":
-			return errs.NewValidationError("O campo " + vErr.Field() + " deve ser: " + vErr.Param())
-		default:
-			return errs.NewValidationError("O campo " + vErr.Field() + " é inválido ")
-		}
+		return errs.NewValidationError(vErr.Translate(translator))
 	}
 
 	return errs.NewValidationError("Erro ao validar os dados: " + err.Error())
